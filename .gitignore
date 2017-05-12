@@ -1,4 +1,4 @@
-.gradle
+.gradle-wrapper
 /build/
 !gradle/wrapper/gradle-wrapper.jar
 
@@ -26,3 +26,8 @@ nbdist/
 
 ### Spring boot's application.properties
 src/main/resources/application.properties
+
+### Others ###
+/.gradle/
+/gradle/
+/out/
