@@ -1,0 +1,162 @@
+=  Consumer Complaint Application - Getting Started Guide
+Alexandru Irimiea <alex.irimiea@gmail.com>
+v1.0, 2017-03-29
+:doctype: book
+:backend: html5
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+[introduction]
+= Introduction
+
+ This Spring Boot application is based on the Neo4j Movies Demo App. It is using a Neo4j graph database that was created based on data found in the (large!) Consumer Complaint Database.
+
+[[overview]]
+= Overview
+
+[[overview-http-verbs]]
+== HTTP verbs
+
+ Consumer complaint service tries to adhere as closely as possible to standard HTTP and REST conventions in its use of HTTP verbs.
+
+|===
+| Verb | Usage
+
+| `GET`
+| Used to retrieve a resource
+
+| `POST`
+| Used to create a new resource
+
+| `PATCH`
+| Used to update an existing resource, including partial updates
+
+| `PUT`
+| Used to update an existing resource, full updates only
+
+| `DELETE`
+| Used to delete an existing resource
+|===
+
+[[overview-http-status-codes]]
+== HTTP status codes
+
+ Consumer complaint service tries to adhere as closely as possible to standard HTTP and REST conventions in its use of HTTP status codes.
+
+|===
+| Status code | Usage
+
+| `200 OK`
+| Standard response for successful HTTP requests.
+| The actual response will depend on the request method used.
+| In a GET request, the response will contain an entity corresponding to the requested resource.
+| In a POST request, the response will contain an entity describing or containing the result of the action.
+
+| `201 Created`
+| The request has been fulfilled and resulted in a new resource being created.
+
+| `204 No Content`
+| The server successfully processed the request, but is not returning any content.
+
+| `400 Bad Request`
+| The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing).
+
+| `404 Not Found`
+| The requested resource could not be found but may be available again in the future. Subsequent requests by the client are permissible.
+|===
+
+[[resources]]
+= Resources
+
+[[resources-complaints]]
+== Complaints
+ The Complaint resource is used to create, modify and list complaints.
+
+[[resources-complaints-find-by-id]]
+=== Retrieving a complaint based on its ID
+ A `GET` request to retrieve a complaint based on its ID.
+
+==== Request parameters
+include::{snippets}/find-by-id/path-parameters.adoc[]
+
+==== Example requests
+HTTP:
+include::{snippets}/find-by-id/http-request.adoc[]
+
+HTTPie:
+include::{snippets}/find-by-id/httpie-request.adoc[]
+
+CURL:
+include::{snippets}/find-by-id/curl-request.adoc[]
+
+==== Example response
+include::{snippets}/find-by-id/http-response.adoc[]
+
+[[resources-complaints-create-complaint]]
+=== Creating a new complaint
+ A `POST` request to insert a complaint into the database.
+
+==== Request fields
+include::{snippets}/create-complaint/request-fields.adoc[]
+
+*_TODO:_* _Must fix a typo in the code ('day' instead of 'dat')_
+
+==== Example requests
+HTTP:
+include::{snippets}/create-complaint/http-request.adoc[]
+
+HTTPie:
+include::{snippets}/create-complaint/httpie-request.adoc[]
+
+CURL:
+include::{snippets}/create-complaint/curl-request.adoc[]
+
+==== Example response
+include::{snippets}/create-complaint/http-response.adoc[]
+
+[[resources-complaints-get-complaints-for-company-id]]
+=== Retrieving a company's complaints
+ A `GET` request to retrieve the existing complaints for a company based on the company ID.
+
+==== Request parameters
+include::{snippets}/get-complaints-for-company-id/request-parameters.adoc[]
+
+==== Example requests
+HTTP:
+include::{snippets}/get-complaints-for-company-id/http-request.adoc[]
+
+HTTPie:
+include::{snippets}/get-complaints-for-company-id/httpie-request.adoc[]
+
+CURL:
+include::{snippets}/get-complaints-for-company-id/curl-request.adoc[]
+
+==== Example response
+include::{snippets}/get-complaints-for-company-id/http-response.adoc[]
+
+[[resources-companies]]
+== Companies
+ The Company resource is used to list complaints for companies matching a certain name (fragment).
+
+[[resources-companies-find-by-name-containing]]
+=== Retrieving a list of complaints for companies matching name.
+ A `GET` request to retrieve the complaints for all companies matching the given name (fragment).
+
+==== Request parameters
+include::{snippets}/find-by-name-containing/request-parameters.adoc[]
+
+==== Example requests
+HTTP:
+include::{snippets}/find-by-name-containing/http-request.adoc[]
+
+HTTPie:
+include::{snippets}/find-by-name-containing/httpie-request.adoc[]
+
+CURL:
+include::{snippets}/find-by-name-containing/curl-request.adoc[]
+
+==== Example response
+include::{snippets}/find-by-name-containing/http-response.adoc[]
