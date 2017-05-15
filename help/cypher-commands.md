@@ -6,10 +6,10 @@
 
 ## How to import data from CSV into the Neo4J database
 
-#### Step 1
+#### Install Neo4j
 Install Neo4j on your machine and then go to its install directory and execute bin/neo4j-shell.
 
-#### Step 2 - Importing data from the .CSV file
+#### Importing data from the .CSV file
 **Note:** The "*LIMIT 1*" should be removed from the Cypher queries when importing data. 
 The sample queries provided below contain it so that they are executed faster (useful when getting familiar with Cypher commands).
   
@@ -139,22 +139,42 @@ CREATE (complaint)-[:ABOUT]->(product)
 CREATE (complaint)-[:WITH]->(issue);
 ```
 
-In a similar fashion, the SubIssue and SubProduct nodes and relationships will be created. See below complete script.
+#### Issues you may encounter
+During .CSV import you may encounter this kind of error:
 
-#### Open items/questions
+```
+At C:\Users\itsix\Documents\Neo4j\default.graphdb\import\Consumer_Complaints.csv:956356 -  there's a field starting with a quote and whereas it ends that quote there seems to be characters in that field after that ending quote. That isn't supported. This is what I read: 'Shellpoint Mortgage Service XX/XX/2016 ATTN EXCALLATION DEPARTEMNT LOAN NUMBER XXXX XXXX, Chief of the Escalation Department. 
+
+Dear XXXX : I am in receipt of the letter send from you Department on XX/XX/2016- Someone is CLEARY NOT PAYING ATTENTION TO MY ACCOUNT : OR THE RETENTION OF MY HOME- When I received the call on XX/XX/2016- from XXXX he knew that the DOLLARS where incorrect on my Modification Denial with the UNDERWRITING DEPARTMENT not adding any rental income. In addition, his superior called me per my insistence in the Denial of the Modification an also concurred that there was no rental income and the Modification showing a NEGATIVE loan ratio of ( -140 % ) -- Debit to income- NOW let 's look at page one of your XX/XX/XXXX letter FROT with ERRORS- and misinformation. 
+# 1 My net income for EXCURSIONS as sent in is $ XXXX That is my SEDAN CAR BUISNESS No added correctly is the long term rental property income of {$5300.00} discounting the income per HAMP at 75 % is a positive {$3900.00}. THAT would clearly make a monthly NET income to me of {$6500.00} per month NET to ME XXXX- take away the MORTGAGE PAYMENT for the rental unit of {$2600.00} = {$3900.00} take away with a new HAMP MODIFIED PAYMENT on the balance of {$370000.00} on a 2 % note the payment would be at {$1300.00} per month- plus taxes and insurance of roughly {$500.00} per month I would be at 50 % LOAN TO VALUE NOT NEGATIVE 140 PERCENT- SO, let 's look at {$6500.00} a payment of {$1900.00} would be a positive 32 % Debt to income ratio- Now please try to explain this to the Consumer Protection Bureau- your response is not posted on my site and a second note was sent to you for my concerns of your response. 
+
+XXXX CO XXXX- XXXX CC XXXX Attorney on File and the Consumer Protection Bureau. 
+",Company believes it acted appropriately as authorized by contract or law,"S'
+```
+This means some minor manual corrections have to be made to the .CSV file in order to remove or change those special characters causing the problems.
+It's a small trade-off anyway, as I noticed there aren't too many places where this problem occurs.
+
+#### Extract SubIssue and SubProduct data into two separate .CSV files
+This is because not all the rows in the original .CSV file have data filled in for SubIssue or SubProduct and these rows must be filtered out.
+
+Steps to take here: 
+1. Copy the SubIssue and Complaint ID content into a new .CSV file (only these two columns from the original file), remove the rows where there is no data filled in for SubIssue (cell value is empty).
+2. Copy the SubProduct and Complaint ID content into a new .CSV file (only these two columns from the original file), remove the rows where there is no data filled in for SubProduct (cell value is empty).
+3. Then, in a similar fashion, the SubIssue and SubProduct nodes and relationships will be created.
+
+## Open items/questions
 
 1. How to make bin/neo4j-shell work in Windows (cypher-shell.bat)?
 
 2. FIXED (see above) - How to use file:// in Windows?
 
-#### Complete import script below
+## Complete import script
 
 ```
 CREATE CONSTRAINT ON (c:Complaint) ASSERT c.id is UNIQUE;
 CREATE CONSTRAINT ON (c:Company) ASSERT c.name is UNIQUE;
 CREATE CONSTRAINT ON (r:Response) ASSERT r.name is UNIQUE;
 ```
-
 
 ```
 USING PERIODIC COMMIT 1000
@@ -228,18 +248,10 @@ CREATE (complaint)-[:ABOUT]->(subproduct)
 MERGE (subproduct)-[:IN_CATEGORY]->(product);
 ```
 
+## Sample Cypher command to query for data
 
-
-//leads to this error:
-At C:\Users\itsix\Documents\Neo4j\default.graphdb\import\Consumer_Complaints.csv:956356 -  there's a field starting with a quote and whereas it ends that quote there seems to be characters in that field after that ending quote. That isn't supported. This is what I read: 'Shellpoint Mortgage Service XX/XX/2016 ATTN EXCALLATION DEPARTEMNT LOAN NUMBER XXXX XXXX, Chief of the Escalation Department. 
-
-Dear XXXX : I am in receipt of the letter send from you Department on XX/XX/2016- Someone is CLEARY NOT PAYING ATTENTION TO MY ACCOUNT : OR THE RETENTION OF MY HOME- When I received the call on XX/XX/2016- from XXXX he knew that the DOLLARS where incorrect on my Modification Denial with the UNDERWRITING DEPARTMENT not adding any rental income. In addition, his superior called me per my insistence in the Denial of the Modification an also concurred that there was no rental income and the Modification showing a NEGATIVE loan ratio of ( -140 % ) -- Debit to income- NOW let 's look at page one of your XX/XX/XXXX letter FROT with ERRORS- and misinformation. 
-# 1 My net income for EXCURSIONS as sent in is $ XXXX That is my SEDAN CAR BUISNESS No added correctly is the long term rental property income of {$5300.00} discounting the income per HAMP at 75 % is a positive {$3900.00}. THAT would clearly make a monthly NET income to me of {$6500.00} per month NET to ME XXXX- take away the MORTGAGE PAYMENT for the rental unit of {$2600.00} = {$3900.00} take away with a new HAMP MODIFIED PAYMENT on the balance of {$370000.00} on a 2 % note the payment would be at {$1300.00} per month- plus taxes and insurance of roughly {$500.00} per month I would be at 50 % LOAN TO VALUE NOT NEGATIVE 140 PERCENT- SO, let 's look at {$6500.00} a payment of {$1900.00} would be a positive 32 % Debt to income ratio- Now please try to explain this to the Consumer Protection Bureau- your response is not posted on my site and a second note was sent to you for my concerns of your response. 
-
-XXXX CO XXXX- XXXX CC XXXX Attorney on File and the Consumer Protection Bureau. 
-",Company believes it acted appropriately as authorized by contract or law,"S'
-
-
+#### Retrieve all details given an existing Complain ID (change the ID to match the data in your DB)
+```
 MATCH (complaint:Complaint) 
 MATCH (complaint)<-[:TO]-(response:Response)
 MATCH (complaint)-[:WITH]->(issue:Issue)
@@ -251,10 +263,14 @@ OPTIONAL MATCH (complaint)-[:WITH]->(subIssue:SubIssue)-[:IN_CATEGORY]->(issue)
 OPTIONAL MATCH (complaint)-[:ABOUT]->(subProduct:SubProduct)-[:IN_CATEGORY]->(product)
 
 RETURN complaint, issue, subIssue, product, subProduct, response
+```
 
-
-//sample query to return complaint, product and sub product
+#### Sample query to return complaint, product and sub product
+```
 MATCH (c:Complaint)-[:ABOUT]->(p:Product)<-[:IN_CATEGORY]-(sp:SubProduct)<-[:ABOUT]-(c) RETURN c limit 1
+```
 
-//sample query to return complaint, issue and sub issue
+#### Sample query to return complaint, issue and sub issue
+```
 MATCH (c:Complaint)-[:WITH]->(i:Issue)<-[:IN_CATEGORY]-(si:SubIssue)<-[:WITH]-(c) RETURN c limit 1
+```
