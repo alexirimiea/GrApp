@@ -1,23 +1,44 @@
-// Useful links
-// https://packagecontrol.io/packages/Cypher
-// https://packagecontrol.io/installation#st3
-// https://packagecontrol.io/docs/usage
-// https://github.com/kollhof/sublime-cypher
+## Useful links
+* [Sublime Text editor's Package Control - Basic functionality](https://packagecontrol.io/docs/usage)
+* [Sublime Text editor's Package Control - Installation](https://packagecontrol.io/installation#st3)
+* [Sublime Text editor's Syntax Highlighting for Cypher](https://packagecontrol.io/packages/Cypher)
+* [GitHub project - Syntax highlighting for Neo4j's Cypher query language in SublimeText](https://github.com/kollhof/sublime-cypher)
 
-Go to Neo4j install directory and execute bin/neo4j-shell
+## How to import data from CSV into the Neo4J database
 
+1. Step 1
+Go to Neo4j install directory and execute bin/neo4j-shell:
+
+2. Step 2 - Importing data from CSV
+
+2.1. It can be done either by using the URL provided by consumerfinance.gov:
+```
 LOAD CSV WITH HEADERS FROM 'https://data.consumerfinance.gov/api/views/s6ew-h6mp/rows.csv?accessType=DOWNLOAD' AS line WITH line LIMIT 1 RETURN line
+```
 
-// In the browser interface (Neo4j 3.0.3, MacOS 10.11) it looks like Neo4j prefixes your file path with $path_to_graph_database/import.
-// Windows: put all the .csv files here: c:\Users\itsix\Documents\Neo4j\default.graphdb\import\
+2.2. Or the .CSV file can be downloaded and imported "offline":
+In the browser interface (Neo4j 3.0.3, MacOS 10.11) it looks like Neo4j prefixes your file path with $path_to_graph_database/import.
+Note for Windows users: The $path_to_graph_database is usually something like c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb
+Therefore you'll have to put all the .csv files here: c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb\import\
+
+* Proceed to importing data using this command:
+```
 LOAD CSV WITH HEADERS 
 FROM 'file:///Consumer_Complaints.csv' AS line 
 WITH line 
 LIMIT 1 
 RETURN line
-
+```
+* Some improvements to the previous query:
+We will rename the "Date received" column into "date":
+```
 LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints.csv' AS line WITH line.`Date received` AS date LIMIT 1 RETURN date
+```
+
+* It's also a good idea to split date columns into day, month, year "fragments":
+```
 LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints.csv' AS line WITH SPLIT(line.`Date received`, '/') AS date LIMIT 1 RETURN date
+```
 
 
 // How to delete all nodes and relationships:
