@@ -6,18 +6,14 @@
 
 ## How to import data from CSV into the Neo4J database
 
-1. Step 1
-Go to Neo4j install directory and execute bin/neo4j-shell:
+#### Step 1
+Install Neo4j on your machine and then go to its install directory and execute bin/neo4j-shell.
 
-2. Step 2 - Importing data from CSV
-
-**Note:** The "LIMIT 1" should be removed from the Cypher queries when importing data.
- 
+#### Step 2 - Importing data from the .CSV file
+**Note:** The "*LIMIT 1*" should be removed from the Cypher queries when importing data. 
 The sample queries provided below contain it so that they are executed faster (useful when getting familiar with Cypher commands).
-
-
-  1. It can be done either by using the URL provided by [Consumer Financial Protection Bureau](https://www.consumerfinance.gov/):
-    
+  
+1. It can be done either by using the URL provided by [Consumer Financial Protection Bureau](https://www.consumerfinance.gov/):
 ```
 LOAD CSV WITH HEADERS 
 FROM 'https://data.consumerfinance.gov/api/views/s6ew-h6mp/rows.csv?accessType=DOWNLOAD' AS line 
@@ -26,11 +22,11 @@ LIMIT 1
 RETURN line
 ```
 
-  2. Or the .CSV file can be downloaded and imported "offline":
+2. Or the .CSV file can be downloaded and imported "offline":
     
-In the browser interface (Neo4j 3.0.3, MacOS 10.11) it looks like Neo4j prefixes your file path with $path_to_graph_database/import.
+In the browser interface (Neo4j 3.0.3, MacOS 10.11) it looks like Neo4j prefixes your file path with *$path_to_graph_database/import*.
 
-**Note for Windows users:** The *$path_to_graph_database* is usually something like:
+**Note:** For Windows users, the *$path_to_graph_database* is usually something like:
  
 *c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb*
 
@@ -38,7 +34,7 @@ Therefore you'll have to put all the .csv files here:
 
 *c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb\import\\*
 
-Proceed to importing data using this command:
+Typically, you can import data using this command:
 
 ```
 LOAD CSV WITH HEADERS 
@@ -69,25 +65,30 @@ LIMIT 1
 RETURN date
 ```
 
-In case something went wrong or you just want to experiment and try different queries you can delete all nodes and relationships with this query:
+**Note:** In case something went wrong or you just want to experiment and try different queries you can delete all nodes and relationships with this query:
 
 ```
 MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
 ```
 
-//********************* Start
+Importing data from the .csv into corresponding nodes will be done in several iterations. First, we'll import (and create nodes and relationships for) complaints, companies and responses.
 
-// first iteration - Complaints, companies and responses
+It's mandatory to create unique constraints on complaint IDs, company and response names (needed when merging):  
 
+```
 CREATE CONSTRAINT ON (c:Complaint) ASSERT c.id is UNIQUE;
 CREATE CONSTRAINT ON (c:Company) ASSERT c.name is UNIQUE;
 CREATE CONSTRAINT ON (r:Response) ASSERT r.name is UNIQUE;
+```
 
-//check using 
+Check if the constraints have successfully been created using the following command:
+```
 :schema
+```
 
-// continue with: Company, Complaint and Response
+Continue with the following Cypher query to create Company, Complaint and Response nodes and their relationships:
 
+```
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints.csv' AS line 
 WITH line, SPLIT(line.`Date received`, '/') AS date 
@@ -106,15 +107,23 @@ CREATE (complaint)-[:AGAINST]->(company)
 CREATE (response)-[r:TO]->(complaint)
 
 SET r.timely = CASE line.`Timely response?` WHEN 'Yes' THEN true ELSE false END,
-	r.disputed = CASE line.`Consumer disputed?` WHEN 'Yes' THEN true ELSE false END
-;
+	r.disputed = CASE line.`Consumer disputed?` WHEN 'Yes' THEN true ELSE false END;
+```
 
-// second iteration - continue with: Product and Issue
-//Note 1: match instead of create - nodes already exist in DB
-//Note 2: keep this line "WITH line, SPLIT(line.`Date received`, '/') AS date " so that "LIMIT 10" works
+For the second iteration, we'll continue with Product and Issue nodes and their relationships.
+
+**Note 1:** We'll be using "match" instead of "create" because Complaint nodes already exist in our Neo4j database.
+
+**Note 2:** Uncomment this line: "WITH line, SPLIT(line.`Date received`, '/') AS date " in case you plan to uncomment the "LIMIT 10" line as well (for testing purposes).
+
+Again, the very first thing to do is to create the unique constraints:
+```
 CREATE CONSTRAINT ON (p:Product) ASSERT p.name is UNIQUE;
 CREATE CONSTRAINT ON (i:Issue) ASSERT i.name is UNIQUE;
+```
 
+Then:
+```
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints.csv' AS line 
 
@@ -127,33 +136,27 @@ MERGE (product: Product {name: UPPER(line.Product)})
 MERGE (issue: Issue {name: UPPER(line.Issue)})
 
 CREATE (complaint)-[:ABOUT]->(product)
-CREATE (complaint)-[:WITH]->(issue)
-;
+CREATE (complaint)-[:WITH]->(issue);
+```
 
-//************************ Open questions
+In a similar fashion, the SubIssue and SubProduct nodes and relationships will be created. See below complete script.
+
+#### Open items/questions
+
 1. How to make bin/neo4j-shell work in Windows (cypher-shell.bat)?
+
 2. FIXED (see above) - How to use file:// in Windows?
 
+#### Complete import script below
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//*****************************************************
+```
 CREATE CONSTRAINT ON (c:Complaint) ASSERT c.id is UNIQUE;
 CREATE CONSTRAINT ON (c:Company) ASSERT c.name is UNIQUE;
 CREATE CONSTRAINT ON (r:Response) ASSERT r.name is UNIQUE;
+```
 
 
+```
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints_corrected.csv' AS line 
 WITH line, SPLIT(line.`Date received`, '/') AS date 
@@ -170,17 +173,15 @@ CREATE (complaint)-[:AGAINST]->(company)
 CREATE (response)-[r:TO]->(complaint)
 
 SET r.timely = CASE line.`Timely response?` WHEN 'Yes' THEN true ELSE false END,
-	r.disputed = CASE line.`Consumer disputed?` WHEN 'Yes' THEN true ELSE false END
-;
+	r.disputed = CASE line.`Consumer disputed?` WHEN 'Yes' THEN true ELSE false END;
+```
 
-
-
-
-
+```
 CREATE CONSTRAINT ON (p:Product) ASSERT p.name is UNIQUE;
 CREATE CONSTRAINT ON (i:Issue) ASSERT i.name is UNIQUE;
+```
 
-
+```
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints_corrected.csv' AS line 
 
@@ -190,17 +191,14 @@ MERGE (product: Product {name: UPPER(line.Product)})
 MERGE (issue: Issue {name: UPPER(line.Issue)})
 
 CREATE (complaint)-[:ABOUT]->(product)
-CREATE (complaint)-[:WITH]->(issue)
-;
+CREATE (complaint)-[:WITH]->(issue);
+```
 
-
-
-
-
-
+```
 CREATE CONSTRAINT ON (s:SubIssue) ASSERT s.name is UNIQUE;
+```
 
-
+```
 USING PERIODIC COMMIT
 LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints_corrected_subissues.csv' AS line 
 
@@ -210,16 +208,14 @@ MATCH (complaint)-[:WITH]->(issue:Issue)
 MERGE (subissue:SubIssue {name: UPPER(line.`Sub-issue`)})
 
 CREATE (complaint)-[:WITH]->(subissue)
-MERGE (subissue)-[:IN_CATEGORY]->(issue)
-;
+MERGE (subissue)-[:IN_CATEGORY]->(issue);
+```
 
-
-
-
-
+```
 CREATE CONSTRAINT ON (s:SubProduct) ASSERT s.name is UNIQUE;
+```
 
-
+```
 USING PERIODIC COMMIT
 LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints_corrected_subproducts.csv' AS line 
 
@@ -229,8 +225,8 @@ MATCH (complaint)-[:ABOUT]->(product:Product)
 MERGE (subproduct:SubProduct {name: UPPER(line.`Sub-product`)})
 
 CREATE (complaint)-[:ABOUT]->(subproduct)
-MERGE (subproduct)-[:IN_CATEGORY]->(product)
-;
+MERGE (subproduct)-[:IN_CATEGORY]->(product);
+```
 
 
 
