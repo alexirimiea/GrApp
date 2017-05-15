@@ -7,7 +7,7 @@ It is using a [Neo4j](https://neo4j.com/) graph database that was created based 
 
 This is available here for download (*.csv* format) [here](https://www.consumerfinance.gov/data-research/consumer-complaints).
 
-Please refer to the [help/neo4j-commands.cyp](help/neo4j-commands.cyp) script to see how the Neo4j database has been created from this *.csv* file.
+Please refer to the [help/cypher-commands.md](help/cypher-commands.md) script to see how the Neo4j database has been created from this *.csv* file.
 
 You might also consider watching the following [tutorial](https://neo4j.com/developer/guide-import-csv) (very useful!).
 

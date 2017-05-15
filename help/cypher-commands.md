@@ -1,10 +1,17 @@
 ## Useful links
+* [Import Consumer Complaint .CSV file into the Neo4J database tutorial](https://neo4j.com/developer/guide-import-csv)
 * [Sublime Text editor's Package Control - Basic functionality](https://packagecontrol.io/docs/usage)
 * [Sublime Text editor's Package Control - Installation](https://packagecontrol.io/installation#st3)
 * [Sublime Text editor's Syntax Highlighting for Cypher](https://packagecontrol.io/packages/Cypher)
 * [GitHub project - Syntax highlighting for Neo4j's Cypher query language in SublimeText](https://github.com/kollhof/sublime-cypher)
 
 ## How to import data from CSV into the Neo4J database
+
+This is only a brief tutorial on how to import data from the .CSV file and create the Consumer Complaint Neo4J database.
+
+It's basically a transcript of the following [tutorial](https://neo4j.com/developer/guide-import-csv). Also contains a very useful video.
+
+The complete Cypher script is available at the end of this file.
 
 #### Install Neo4j
 Install Neo4j on your machine and then go to its install directory and execute bin/neo4j-shell.
@@ -30,7 +37,7 @@ In the browser interface (Neo4j 3.0.3, MacOS 10.11) it looks like Neo4j prefixes
  
 *c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb*
 
-Therefore you'll have to put all the .csv files here: 
+Therefore you'll have to put all the .CSV files here: 
 
 *c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb\import\\*
 
@@ -71,7 +78,7 @@ RETURN date
 MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
 ```
 
-Importing data from the .csv into corresponding nodes will be done in several iterations. First, we'll import (and create nodes and relationships for) complaints, companies and responses.
+Importing data from the .CSV into corresponding nodes will be done in several iterations. First, we'll import (and create nodes and relationships for) complaints, companies and responses.
 
 It's mandatory to create unique constraints on complaint IDs, company and response names (needed when merging):  
 
