@@ -11,17 +11,35 @@ Go to Neo4j install directory and execute bin/neo4j-shell:
 
 2. Step 2 - Importing data from CSV
 
-2.1. It can be done either by using the URL provided by consumerfinance.gov:
+**Note:** The "LIMIT 1" should be removed from the Cypher queries when importing data.
+ 
+The sample queries provided below contain it so that they are executed faster (useful when getting familiar with Cypher commands).
+
+
+  1. It can be done either by using the URL provided by [Consumer Financial Protection Bureau](https://www.consumerfinance.gov/):
+    
 ```
-LOAD CSV WITH HEADERS FROM 'https://data.consumerfinance.gov/api/views/s6ew-h6mp/rows.csv?accessType=DOWNLOAD' AS line WITH line LIMIT 1 RETURN line
+LOAD CSV WITH HEADERS 
+FROM 'https://data.consumerfinance.gov/api/views/s6ew-h6mp/rows.csv?accessType=DOWNLOAD' AS line 
+WITH line 
+LIMIT 1 
+RETURN line
 ```
 
-2.2. Or the .CSV file can be downloaded and imported "offline":
+  2. Or the .CSV file can be downloaded and imported "offline":
+    
 In the browser interface (Neo4j 3.0.3, MacOS 10.11) it looks like Neo4j prefixes your file path with $path_to_graph_database/import.
-Note for Windows users: The $path_to_graph_database is usually something like c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb
-Therefore you'll have to put all the .csv files here: c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb\import\
 
-* Proceed to importing data using this command:
+**Note for Windows users:** The *$path_to_graph_database* is usually something like:
+ 
+*c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb*
+
+Therefore you'll have to put all the .csv files here: 
+
+*c:\Users\<your Windows user>\Documents\Neo4j\default.graphdb\import\\*
+
+Proceed to importing data using this command:
+
 ```
 LOAD CSV WITH HEADERS 
 FROM 'file:///Consumer_Complaints.csv' AS line 
@@ -29,20 +47,33 @@ WITH line
 LIMIT 1 
 RETURN line
 ```
-* Some improvements to the previous query:
+
+Some improvements to the previous query:
 We will rename the "Date received" column into "date":
+
 ```
-LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints.csv' AS line WITH line.`Date received` AS date LIMIT 1 RETURN date
+LOAD CSV WITH HEADERS 
+FROM 'file:///Consumer_Complaints.csv' AS line 
+WITH line.`Date received` AS date 
+LIMIT 1 
+RETURN date
 ```
 
-* It's also a good idea to split date columns into day, month, year "fragments":
+It's also a good idea to split date columns into day, month, year "fragments":
+
 ```
-LOAD CSV WITH HEADERS FROM 'file:///Consumer_Complaints.csv' AS line WITH SPLIT(line.`Date received`, '/') AS date LIMIT 1 RETURN date
+LOAD CSV WITH HEADERS 
+FROM 'file:///Consumer_Complaints.csv' AS line 
+WITH SPLIT(line.`Date received`, '/') AS date 
+LIMIT 1 
+RETURN date
 ```
 
+In case something went wrong or you just want to experiment and try different queries you can delete all nodes and relationships with this query:
 
-// How to delete all nodes and relationships:
+```
 MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
+```
 
 //********************* Start
 
